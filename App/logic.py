@@ -170,7 +170,7 @@ def req_1(catalog, start_id, end_id):
     # BFS
     my_queue = queue.new_queue()  # Crear una nueva cola
     queue.enqueue(my_queue, (start_id, [start_id]))  # Encolar el nodo inicial con el camino
-    visited = set()  # Usar un conjunto para rastrear los nodos visitados
+    visited = []  # Usamos una lista para rastrear los nodos visitados
 
     while not queue.is_empty(my_queue):
         current_id, path = queue.dequeue(my_queue)  # Obtener el nodo actual y el camino hasta él
@@ -196,7 +196,7 @@ def req_1(catalog, start_id, end_id):
 
         # Verificar si el nodo actual ya ha sido visitado
         if current_id not in visited:
-            visited.add(current_id)  # Marcar el nodo como visitado
+            visited.append(current_id)  # Marcar el nodo como visitado
             # Obtener los vecinos del nodo actual
             neighbors = mp.get(catalog['social_graph']["vertices"], current_id)
             if neighbors:  # Verificar que hay vecinos
