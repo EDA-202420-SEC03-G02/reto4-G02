@@ -1,7 +1,10 @@
+import time
 import csv
 from datetime import datetime
 from DataStructures import graph as g
 from DataStructures import map_linear_probing as mp
+from DataStructures import queue 
+from DataStructures import array_list as lt
 def new_logic():
     """
     Crea el catalogo para almacenar las estructuras de datos
@@ -136,12 +139,79 @@ def get_data(catalog, id):
 pass
 
 
-def req_1(catalog):
+def is_visited(visited_list, user_id):
     """
-    Retorna el resultado del requerimiento 1
+    Verifica si un usuario ha sido visitado.
+
+    Args:
+        visited_list (list): Lista de usuarios visitados.
+        user_id (str): ID del usuario a verificar.
+
+    Returns:
+        bool: True si el usuario ha sido visitado, False en caso contrario.
     """
-    # TODO: Modificar el requerimiento 1
-    pass
+    return user_id in visited_list
+
+def req_1(catalog, start_id, end_id):
+    """
+    Retorna el resultado del requerimiento 1: identifica la red de personas entre dos usuarios.
+    
+    Args:
+        catalog (dict): El catálogo que contiene el grafo social.
+        start_id (str): ID del usuario de origen.
+        end_id (str): ID del usuario de destino.
+
+    Returns:
+        dict: Un diccionario con el tiempo de ejecución, cantidad de personas en el camino,
+              y detalles del camino.
+    """
+    start_time = time.time()  # Iniciar el temporizador
+
+    # BFS
+    my_queue = queue.new_queue()  # Crear una nueva cola
+    queue.enqueue(my_queue, (start_id, [start_id]))  # Encolar el nodo inicial con el camino
+    visited = set()  # Usar un conjunto para rastrear los nodos visitados
+
+    while not queue.is_empty(my_queue):
+        current_id, path = queue.dequeue(my_queue)  # Obtener el nodo actual y el camino hasta él
+
+        # Verificar si el nodo actual es el destino
+        if current_id == end_id:
+            # Obtener detalles de los usuarios en el camino
+            user_details = []
+            for user_id in path:
+                user_info = mp.get(catalog["social_graph"]["information"], user_id)
+                if user_info:
+                    user_details.append({
+                        "id": user_id,
+                        "alias": user_info.get("name", "Unknown"),
+                        "type": user_info.get("type", "Unknown")
+                    })
+            execution_time = time.time() - start_time  # Calcular tiempo de ejecución
+            return {
+                "execution_time": execution_time * 1000,  # Convertir a milisegundos
+                "path_length": len(path),
+                "path_details": user_details
+            }
+
+        # Verificar si el nodo actual ya ha sido visitado
+        if current_id not in visited:
+            visited.add(current_id)  # Marcar el nodo como visitado
+            # Obtener los vecinos del nodo actual
+            neighbors = mp.get(catalog['social_graph']["vertices"], current_id)
+            if neighbors:  # Verificar que hay vecinos
+                for neighbor in neighbors:
+                    if neighbor not in visited:
+                        queue.enqueue(my_queue, (neighbor, path + [neighbor]))
+
+    # Si no se encuentra un camino
+    return {
+        "execution_time": time.time() - start_time,
+        "path_length": 0,
+        "path_details": []
+    }
+
+
 
 
 def req_2(catalog):

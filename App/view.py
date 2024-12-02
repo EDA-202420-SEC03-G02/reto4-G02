@@ -61,10 +61,34 @@ def print_data(control, id):
 
 def print_req_1(control):
     """
-        Función que imprime la solución del Requerimiento 1 en consola
+    Función que imprime la solución del Requerimiento 1 en consola.
     """
-    # TODO: Imprimir el resultado del requerimiento 1
-    pass
+    # Solicitar el ID del usuario de origen
+    start_id = input("Ingrese el ID del usuario de origen: ")
+    # Solicitar el ID del usuario de destino
+    end_id = input("Ingrese el ID del usuario de destino: ")
+
+    # Llamar a la función que obtiene el camino entre los usuarios
+    resultados = lg.req_1(control, start_id, end_id)
+
+    # Imprimir el tiempo de ejecución
+    print("Tiempo de ejecución:", f"{resultados['execution_time'] :.3f}", "[ms]")  
+
+    # Imprimir el total de personas en el camino
+    print(f"Total de personas en el camino: {resultados['path_length']}")
+
+    # Imprimir los detalles del camino
+    if resultados['path_length'] > 0:
+        print("=" * 80)
+        print("Detalles del camino:")
+        table_path = []
+        for user in resultados['path_details']:
+            table_path.append([user['id'], user['alias'], user['type']])
+        
+        headers_path = ["ID", "Alias", "Tipo"]
+        print(tabulate(table_path, headers=headers_path, tablefmt="grid"))
+    else:
+        print("No se encontró un camino entre los usuarios especificados.")
 
 
 def print_req_2(control):

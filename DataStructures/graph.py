@@ -230,35 +230,38 @@ def insert_vertex(graph, key_vertex, info_vertex=None):
     else:
         mp.put(graph["information"], key_vertex, info_vertex)  # Actualiza información
 
-def add_edge(graph, vertex_a, vertex_b, weight=0):
+def add_edge(graph, vertex_a, vertex_b):
     """
-    Agrega un arco al grafo. Si ya existe, actualiza el peso. Si no existe, lo crea.
+    Agrega una arista entre dos vértices en el grafo.
     
-    :param graph: El grafo donde se agregará el arco.
-    :type graph: dict
-    :param vertex_a: El vértice de origen.
-    :type vertex_a: any
-    :param vertex_b: El vértice de destino.
-    :type vertex_b: any
-    :param weight: El peso del arco (opcional).
-    :type weight: float
+    :param graph: El grafo en el que se agregará la arista.
+    :param vertex_a: El ID del primer vértice.
+    :param vertex_b: El ID del segundo vértice.
     """
-    # Verifica si el arco puede ser agregado
-    if not mp.contains(graph["vertices"], vertex_a):
-        insert_vertex(graph, vertex_a)
-    if not mp.contains(graph["vertices"], vertex_b):
-        insert_vertex(graph, vertex_b)
+    # Asegurarse de que ambos vértices existan en el grafo
+    if not mp.contains(graph['vertices'], vertex_a):
+        mp.put(graph['vertices'], vertex_a, [])
+    if not mp.contains(graph['vertices'], vertex_b):
+        mp.put(graph['vertices'], vertex_b, [])
 
-    # Agrega el nuevo arco a la lista de aristas
-    graph["edges"].append((vertex_a, vertex_b, weight))  # Almacena como tupla (origen, destino, peso)
+    # Agregar la arista a la lista de aristas
+    graph['edges'].append((vertex_a, vertex_b))
+    
+    # Agregar el vértice B a la lista de vecinos de A
+    neighbors_a = mp.get(graph['vertices'], vertex_a)
+    if vertex_b not in neighbors_a:
+        neighbors_a.append(vertex_b)
+        mp.put(graph['vertices'], vertex_a, neighbors_a)
+    
+    # Si el grafo es dirigido, no se agrega la arista en sentido inverso
+    if graph['directed']:
+        return
 
-    if graph["directed"]:
-        # Actualiza el grado de entrada de vertex_b
-        in_degree_value = mp.get(graph["in_degree"], vertex_b) if graph["in_degree"] else 0
-        mp.put(graph["in_degree"], vertex_b, in_degree_value + 1)
-    else:
-        # Para grafos no dirigidos, agrega el arco en ambas direcciones
-        graph["edges"].append((vertex_b, vertex_a, weight))  # Agrega la arista inversa
+    # Si el grafo no es dirigido, agregar el vértice A a la lista de vecinos de B
+    neighbors_b = mp.get(graph['vertices'], vertex_b)
+    if vertex_a not in neighbors_b:
+        neighbors_b.append(vertex_a)
+        mp.put(graph['vertices'], vertex_b, neighbors_b)
 
 def num_vertices(graph):
     """Retorna el número de vértices en el grafo."""

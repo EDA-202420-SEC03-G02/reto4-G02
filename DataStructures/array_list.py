@@ -137,7 +137,8 @@ def get_element(my_list, pos):
     """
 
     try:
-        # raise error.FunctionNotImplemented("get_element()")
+        if pos < 0 or pos >= my_list['size']:
+            raise IndexError("Índice fuera de rango")
         return my_list['elements'][pos]
     except Exception as exp:
         error.reraise(exp, 'arraylist->getElement: ')
