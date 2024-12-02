@@ -1,12 +1,15 @@
 import sys
-
+import App.logic as lg
+from tabulate import tabulate
+from datetime import datetime
 
 def new_logic():
     """
         Se crea una instancia del controlador
     """
     #TODO: Llamar la función de la lógica donde se crean las estructuras de datos
-    pass
+    return lg.new_logic()
+pass
 
 def print_menu():
     print("Bienvenido")
@@ -25,8 +28,28 @@ def load_data(control):
     """
     Carga los datos
     """
-    #TODO: Realizar la carga de datos
-    pass
+    
+    total_users, total_connections, user_types, average_followers, city_with_most_users = lg.load_data(control, "relationships_large.csv", "users_info_large.csv")
+
+    print(f"\nTotal de usuarios cargados: {total_users}")
+    print(f"Total de conexiones cargadas: {total_connections}")
+    
+    print("\nTipos de usuarios:")
+    display_user_types(user_types)
+    
+    print(f"\nPromedio de seguidores por usuario: {average_followers:.2f}")
+    print(f"\nCiudad con más usuarios: {city_with_most_users[0]} con {city_with_most_users[1]} usuarios.")
+
+def display_user_types(user_types):
+    """
+    Muestra la información de los tipos de usuarios en formato tabular.
+    """
+    table = []
+    for user_type, count in user_types.items():
+        table.append([user_type, count])
+
+    print(tabulate(table, headers=["Tipo de Usuario", "Cantidad"], tablefmt="fancy_grid"))
+
 
 
 def print_data(control, id):

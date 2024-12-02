@@ -1,30 +1,139 @@
-import time
-
+import csv
+from datetime import datetime
+from DataStructures import graph as g
+from DataStructures import map_linear_probing as mp
 def new_logic():
     """
     Crea el catalogo para almacenar las estructuras de datos
     """
     #TODO: Llama a las funciónes de creación de las estructuras de datos
-    pass
-
+    catalog = {
+        'social_graph': g.new_graph()  
+    }
+    return catalog
+pass
 
 # Funciones para la carga de datos
 
-def load_data(catalog, filename):
+def load_data(catalog, relationships_file, users_file):
     """
-    Carga los datos del reto
+    Carga los datos de relaciones y usuarios en el grafo.
     """
-    # TODO: Realizar la carga de datos
-    pass
+    # Cargar relaciones
+    relationships_file = "C:\\Users\\dfeli\\Downloads\\Universidad Segundo Semestre\\Estructura De Datos Y Algoritmos\\Retos\\Reto 4\\reto4-G02\\Data\\relationships_large.csv"
+    #No borrar las direcciones de los demas solo comentarlas
+    file1 = csv.DictReader(open(relationships_file, encoding="ISO-8859-1"), delimiter=';')
 
-# Funciones de consulta sobre el catálogo
+    for row in file1:
+        follower_id = row["FOLLOWER_ID"]
+        followed_id = row["FOLLOWED_ID"]
+        start_date = datetime.strptime(row["START_DATE"], "%Y-%m-%d %H:%M:%S") if row["START_DATE"] else None
+        
+        # Agregar la conexión al grafo
+        g.add_edge(catalog['social_graph'], follower_id, followed_id)
+
+    # Cargar usuarios
+    users_file = "C:\\Users\\dfeli\\Downloads\\Universidad Segundo Semestre\\Estructura De Datos Y Algoritmos\\Retos\\Reto 4\\reto4-G02\\Data\\users_info_large.csv"
+    #No borrar las direcciones de los demas solo comentarlas
+    file2 = csv.DictReader(open(users_file, encoding="ISO-8859-1"), delimiter=';')
+    for row in file2:
+        user_id = row["USER_ID"]
+        user_name = row["USER_NAME"] if row["USER_NAME"] else "Unknown"
+        user_type = row["USER_TYPE"] if row["USER_TYPE"] else "Unknown"
+        age = int(row["AGE"]) if row["AGE"].isdigit() else None
+        join_date = datetime.strptime(row["JOIN_DATE"], "%d/%m/%Y") if row["JOIN_DATE"] else None
+        city = row["CITY"] if row["CITY"] else None
+        latitude = float(row["LATITUDE"]) if row["LATITUDE"] else None
+        longitude = float(row["LONGITUDE"]) if row["LONGITUDE"] else None
+        photo = row["PHOTO"] if row["PHOTO"] else None
+        hobbies = row["HOBBIES"] if row["HOBBIES"] else None
+        
+        # Agregar el usuario al grafo
+        g.insert_vertex(catalog['social_graph'], user_id, {
+            "name": user_name,
+            "type": user_type,
+            "age": age,
+            "join_date": join_date,
+            "city": city,
+            "latitude": latitude,
+            "longitude": longitude,
+            "photo": photo,
+            "hobbies": hobbies
+        })
+
+    # Reportar estadísticas
+    total_users = g.num_vertices(catalog['social_graph'])
+    total_connections = g.num_edges(catalog['social_graph'])
+    user_types = count_user_types(catalog['social_graph'])
+    average_followers_value = average_followers(catalog['social_graph'])
+    city_with_most_users_value = city_with_most_users(catalog['social_graph'])
+
+    return total_users, total_connections, user_types, average_followers_value, city_with_most_users_value
+
+def count_user_types(graph):
+    """
+    Cuenta el número de usuarios según su tipo (basic o premium).
+    """
+    user_types = {'basic': 0, 'premium': 0}
+    for user in mp.get_keys(graph["information"]):
+        user_info = mp.get(graph["information"], user)
+        if user_info:
+            user_type = user_info.get('type')
+            if user_type in user_types:
+                user_types[user_type] += 1
+    return user_types
+
+def get_followers(graph, user_id):
+    """
+    Retorna una lista de seguidores para un usuario dado.
+    """
+    followers = []
+    for edge in graph['edges']:
+        if edge[1] == user_id:
+            followers.append(edge[0])  
+    return followers
+
+def average_followers(graph):
+    """
+    Calcula el promedio de seguidores por usuario en el grafo.
+    """
+    total_followers = 0
+    total_users = g.num_vertices(graph)
+    
+    for user_id in mp.get_keys(graph["vertices"]):
+        total_followers += len(get_followers(graph, user_id))  
+        
+    return total_followers / total_users if total_users > 0 else 0
+
+def city_with_most_users(graph):
+    """
+    Determina la ciudad con más usuarios en el grafo.
+    """
+    city_count = {}
+    
+    for user_id in mp.get_keys(graph["information"]):
+        user_info = mp.get(graph["information"], user_id)
+        if user_info and 'city' in user_info:
+            city = user_info['city']
+            if city in city_count:
+                city_count[city] += 1
+            else:
+                city_count[city] = 1
+
+    if city_count:
+        most_users_city = max(city_count, key=city_count.get)
+        return most_users_city, city_count[most_users_city]
+    
+    return None, 0
 
 def get_data(catalog, id):
     """
     Retorna un dato por su ID.
     """
     #TODO: Consulta en las Llamar la función del modelo para obtener un dato
-    pass
+    user_info = mp.get(catalog['social_graph']["information"], id)
+    return user_info
+pass
 
 
 def req_1(catalog):
