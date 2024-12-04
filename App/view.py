@@ -29,10 +29,11 @@ def load_data(control):
     Carga los datos
     """
     
-    total_users, total_connections, user_types, average_followers, city_with_most_users = lg.load_data(control, "relationships_large.csv", "users_info_large.csv")
+    total_users, total_connections, user_types, average_followers, city_with_most_users,time = lg.load_data(control, "relationships_large.csv", "users_info_large.csv")
 
     print(f"\nTotal de usuarios cargados: {total_users}")
     print(f"Total de conexiones cargadas: {total_connections}")
+    print("Tiempo de ejecución:", f"{time:.3f}", "[ms]")
     
     print("\nTipos de usuarios:")
     display_user_types(user_types)
@@ -106,6 +107,27 @@ def print_req_2(control):
         Función que imprime la solución del Requerimiento 2 en consola
     """
     # TODO: Imprimir el resultado del requerimiento 2
+    # Solicitar el ID del usuario de origen
+    start_id = input("Ingrese el ID del usuario de origen: ")
+    # Solicitar el ID del usuario de destino
+    end_id = input("Ingrese el ID del usuario de destino: ")
+
+    # Llamar a la función que obtiene el camino entre los usuarios
+    resultados = lg.req_2(control, start_id, end_id)
+
+    # Imprimir el tiempo de ejecución
+    print("Tiempo de ejecución:", f"{resultados['execution_time']:.3f}", "[ms]")
+
+    # Imprimir la cantidad de personas en el camino
+    print("Cantidad de personas en el camino:", resultados['path_length'])
+
+    # Imprimir los detalles del camino
+    print("Detalles del camino:")
+    print(tabulate(
+        [[user["id"], user["alias"], user["type"]] for user in resultados['path_details']],
+        headers=["ID", "Alias", "Tipo"],
+        tablefmt="grid"
+    ))
     pass
 
 
@@ -114,6 +136,21 @@ def print_req_3(control):
         Función que imprime la solución del Requerimiento 3 en consola
     """
     # TODO: Imprimir el resultado del requerimiento 3
+    # Solicitar el ID del usuario
+    user_id = input("Ingrese el ID del usuario: ")
+
+    # Llamar a la función que obtiene el resultado del requerimiento 3
+    resultados = lg.req_3(control, user_id)
+
+    # Imprimir el tiempo de ejecución
+    print("Tiempo de ejecución:", f"{resultados['execution_time']:.3f}", "[ms]")
+
+    # Imprimir el amigo más popular
+    if resultados['most_popular_friend'] is not None:
+        print("Amigo más popular:", resultados['most_popular_friend'])
+        print("Cantidad de seguidores:", resultados['followers_count'])
+    else:
+        print("El usuario no tiene amigos.")
     pass
 
 

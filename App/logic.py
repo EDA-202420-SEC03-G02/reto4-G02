@@ -5,6 +5,9 @@ from DataStructures import graph as g
 from DataStructures import map_linear_probing as mp
 from DataStructures import queue 
 from DataStructures import array_list as lt
+from DataStructures import index_priority_queue as indx
+from DataStructures import priority_queue as priori
+from DataStructures import stack as st
 def new_logic():
     """
     Crea el catalogo para almacenar las estructuras de datos
@@ -22,8 +25,8 @@ def load_data(catalog, relationships_file, users_file):
     """
     Carga los datos de relaciones y usuarios en el grafo.
     """
-    # Cargar relaciones  #"C:\\Users\\dfeli\\Downloads\\Universidad Segundo Semestre\\Estructura De Datos Y Algoritmos\\Retos\\Reto 4\\reto4-G02\\Data\\relationships_large.csv"
-    relationships_file = r"C:\\Users\\danie\\Downloads\\reto 4\\reto4-G02\\Data\\relationships_80.csv"
+    # Cargar relaciones
+    relationships_file = "C:\\Users\\dfeli\\Downloads\\Universidad Segundo Semestre\\Estructura De Datos Y Algoritmos\\Retos\\Reto 4\\reto4-G02\\Data\\relationships_large.csv"
     #No borrar las direcciones de los demas solo comentarlas
     file1 = csv.DictReader(open(relationships_file, encoding="ISO-8859-1"), delimiter=';')
 
@@ -70,8 +73,8 @@ def load_data(catalog, relationships_file, users_file):
     user_types = count_user_types(catalog['social_graph'])
     average_followers_value = average_followers(catalog['social_graph'])
     city_with_most_users_value = city_with_most_users(catalog['social_graph'])
-
-    return total_users, total_connections, user_types, average_followers_value, city_with_most_users_value
+    execution_time=time.time() - start_time
+    return total_users, total_connections, user_types, average_followers_value, city_with_most_users_value,execution_time
 
 def count_user_types(graph):
     """
@@ -155,17 +158,8 @@ def is_visited(visited_list, user_id):
 def req_1(catalog, start_id, end_id):
     """
     Retorna el resultado del requerimiento 1: identifica la red de personas entre dos usuarios.
-    
-    Args:
-        catalog (dict): El catálogo que contiene el grafo social.
-        start_id (str): ID del usuario de origen.
-        end_id (str): ID del usuario de destino.
-
-    Returns:
-        dict: Un diccionario con el tiempo de ejecución, cantidad de personas en el camino,
-              y detalles del camino.
     """
-    start_time = time.time()  # Iniciar el temporizador
+    start_time = time.time()  
 
     # BFS
     my_queue = queue.new_queue()  # Crear una nueva cola
@@ -189,7 +183,7 @@ def req_1(catalog, start_id, end_id):
                     })
             execution_time = time.time() - start_time  # Calcular tiempo de ejecución
             return {
-                "execution_time": execution_time * 1000,  # Convertir a milisegundos
+                "execution_time": execution_time ,  
                 "path_length": len(path),
                 "path_details": user_details
             }
@@ -214,20 +208,122 @@ def req_1(catalog, start_id, end_id):
 
 
 
-def req_2(catalog):
+def req_2(catalog, start_id, end_id):
     """
-    Retorna el resultado del requerimiento 2
+    Retorna el resultado del requerimiento 2,  Identificar la  ruta  con  menos  personas intermedias entre 2 usuarios de la aplicación tipo basic
     """
     # TODO: Modificar el requerimiento 2
-    pass
+    start_time = time.time()  # Iniciar tiempo de ejecución
 
+    # Inicializar la búsqueda
+    search = g.new_dijkstra_search(start_id)
+    search["visited"][start_id] = 0  # Distancia al origen
+    previous = {start_id: None}  # Diccionario para reconstruir el camino
 
-def req_3(catalog):
+    # Agregar el nodo de inicio a la cola de prioridad
+    search["pq"].append((0, start_id))  
+
+    while search["pq"]:
+        # Encontrar el nodo con la menor distancia en la cola de prioridad
+        current_distance = float('inf')#inicializar valor infinito
+        current_id = None
+        for distance, node in search["pq"]:
+            if distance < current_distance:
+                current_distance = distance
+                current_id = node
+
+        # Eliminar el nodo con la menor distancia de la cola de prioridad
+        search["pq"].remove((current_distance, current_id))
+
+        if current_id == end_id:
+            # Hemos llegado al destino, reconstruir el camino
+            path = []
+            while current_id is not None:
+                path.append(current_id)
+                current_id = previous.get(current_id, None)
+            path.reverse()  # Invertir el camino
+
+            # Obtener detalles de los usuarios en el camino
+            user_details = []
+            for user_id in path:
+                user_info = mp.get(catalog["social_graph"]["information"], user_id)
+                if user_info:
+                    user_details.append({
+                        "id": user_id,
+                        "alias": user_info.get("name", "Unknown"),
+                        "type": user_info.get("type", "Unknown")
+                    })
+
+            execution_time = time.time() - start_time  # Calcular tiempo de ejecución
+            return {
+                "execution_time": execution_time,
+                "path_length": len(path) - 1,  # Cantidad de personas intermedias
+                "path_details": user_details
+            }
+
+        # Marcar el nodo como visitado
+        search["visited"][current_id] = current_distance
+
+        # Obtener los vecinos (amigos) del nodo actual
+        neighbors = mp.get(catalog['social_graph']["vertices"], current_id)
+        if neighbors:
+            for neighbor in neighbors:
+                user_info = mp.get(catalog["social_graph"]["information"], neighbor)
+                if user_info and user_info.get("type") == "basic":  # Solo considerar usuarios "basic"
+                    new_distance = current_distance + 1  # La distancia incrementa en 1 por cada salto
+
+                    # Si encontramos una ruta más corta, actualizar distancias y el camino
+                    if neighbor not in search["visited"] or new_distance < search["visited"][neighbor]:
+                        search["visited"][neighbor] = new_distance
+                        previous[neighbor] = current_id
+                        search["pq"].append((new_distance, neighbor))  # Agregar a la cola de prioridad
+
+    # Si no se encuentra un camino
+    return {
+        "execution_time": time.time() - start_time,
+        "path_length": 0,
+        "path_details": []
+    }
+pass
+
+def req_3(catalog, user_id):
+
     """
-    Retorna el resultado del requerimiento 3
+    Retorna el resultado del requerimiento 3 ,Identificar el amigo de un usuario A con mayor cantidad de seguidores
     """
     # TODO: Modificar el requerimiento 3
-    pass
+    start_time = time.time()  # Iniciar tiempo de ejecución
+
+    # Obtener amigos del usuario A
+    friends = mp.get(catalog['social_graph']["vertices"], user_id)
+    if not friends:
+        return {
+            "execution_time": time.time() - start_time,
+            "most_popular_friend": None,
+            "followers_count": 0
+        }
+
+    most_popular_friend = None
+    max_followers = -1
+
+    # Iterar sobre los amigos para encontrar el que tiene más seguidores
+    for friend_id in friends:
+        # Obtener la lista de seguidores del amigo
+        followers = get_followers(catalog['social_graph'], friend_id)
+        followers_count = len(followers)  # Contar la cantidad de seguidores
+
+        # Verificar si este amigo tiene más seguidores que el actual máximo
+        if followers_count > max_followers:
+            max_followers = followers_count
+            most_popular_friend = friend_id
+
+    execution_time = time.time() - start_time  # Calcular tiempo de ejecución
+
+    return {
+        "execution_time": execution_time,
+        "most_popular_friend": most_popular_friend,
+        "followers_count": max_followers
+    }
 
 
 def req_4(catalog, id_a, id_b):
@@ -268,7 +364,7 @@ def req_4(catalog, id_a, id_b):
         "common_friends_count": len(common_friends),
         "common_friends_details": common_friends_details
     }
-
+    
 def req_5(catalog):
     """
     Retorna el resultado del requerimiento 5
