@@ -151,44 +151,6 @@ def is_visited(visited_list, user_id):
         bool: True si el usuario ha sido visitado, False en caso contrario.
     """
     return user_id in visited_list
-def amigos_por_id(graph, user_id):
-    """
-    Encuentra los amigos de un usuario en el grafo usando BFS.
-    Los amigos se definen como nodos que tienen una relación bidireccional.
-
-    :param catalog: Catálogo que contiene el grafo social.
-    :param user_id: ID del usuario cuyos amigos se desean buscar.
-    :return: Lista de amigos (IDs de usuarios).
-    """
-    # Obtener el grafo del catálogo
-    
-    # Inicializar la cola para BFS y el conjunto de visitados
-    q = queue.new_queue()
-    visited = set()
-    friends = set()  # Usar un conjunto para evitar duplicados
-    lista_de_amigos=[]
-
-    # Agregar el nodo inicial a la cola
-    queue.enqueue(q, user_id)
-    visited.add(user_id)
-
-    while not queue.is_empty(q):
-        current_user = queue.dequeue(q)
-
-        # Obtener la lista de adyacentes del usuario actual
-        adj_list = mp.get(graph['vertices'], current_user)
-        for followed_user in adj_list:
-            # Verificar si hay una conexión de vuelta (amistad bidireccional)
-            followed_adj_list = mp.get(graph['vertices'], followed_user)
-            if current_user in followed_adj_list:
-                friends.add(followed_user)  # Agregar al conjunto de amigos
-
-            # Evitar volver a visitar nodos ya procesados
-            if followed_user not in visited:
-                queue.enqueue(q, followed_user)
-                visited.add(followed_user)
-
-    return list(friends) 
          
 
 def req_1(catalog, start_id, end_id):
@@ -288,10 +250,18 @@ def req_5(catalog, id, numero_amigos):
     :return: Una lista de los amigos filtrados y ordenados.
     """
     # Obtener la lista de amigos del usuario usando la función buscar_amigos
-    amigos = amigos_por_id(catalog['social_graph'], id)  # Usar buscar_amigos para obtener amigos
+    amigos = lt.new_list()
+    for user in mp.get_keys(catalog['social_graph']["information"]):
+        # Obtener los seguidores del primer usuario
+        followers_of_user1 = get_followers(catalog['social_graph'], user)
+        # Obtener los seguidores del segundo usuario
+        followers_of_user2 = get_followers(catalog['social_graph'], id)
+        if id in followers_of_user1 and user in followers_of_user2:
+            lt.add_last(amigos, user)
+   
     lista_filtr = lt.new_list()
 
-    for friend_id in amigos:
+    for friend_id in amigos["elements"]:
         # Obtener la lista de usuarios seguidos por este amigo
         followed = mp.get(catalog['social_graph']["vertices"], friend_id)
         count_followed = len(followed) if followed else 0
@@ -319,9 +289,7 @@ def req_5(catalog, id, numero_amigos):
         return friend_a["followed_count"] > friend_b["followed_count"]
         
     sorted_friends = lt.merge_sort(lista_filtr, sort_crit)
-    top_friends = lt.sub_list(sorted_friends, 0, numero_amigos)
-    
-    return top_friends
+    return sorted_friends["elements"][:numero_amigos]
     pass
 
 def req_6(catalog):
@@ -343,64 +311,75 @@ def req_7(catalog, user_id, lst_hobbies):
     :param lst_hobbies: Lista de hobbies de interés para la búsqueda.
     :return: Un diccionario con el tiempo de ejecución, la cantidad de amigos encontrados y la subred.
     """
-   
-
-    # Inicializar el temporizador
     start_time = time.time()
 
-    # Inicializar estructura para almacenar la subred y hobbies de interés
-    subred = lt.new_list()  # Lista para almacenar resultados
-    lista_hobbies = lst_hobbies.split(",")  # Separar hobbies
+    # Convertir hobbies a lista
+    hobbies_interes = lst_hobbies.split(",")
 
-    # Obtener amigos explícitos e inicializar estructuras auxiliares
-    amigos_explicitos = amigos_por_id(catalog['social_graph'], user_id)
-    amigos_implicitos = []  # Lista para amigos implícitos
-    for amigo_id in amigos_explicitos:
-        amigos_de_amigo = amigos_por_id(catalog['social_graph'], amigo_id)
-        for amigo_de_amigo_id in amigos_de_amigo:
-            if amigo_de_amigo_id not in amigos_implicitos:  # Evitar duplicados en implícitos
-                amigos_implicitos.append(amigo_de_amigo_id)
-    dic_por_id = {}  # Diccionario para evitar duplicados
+    # Inicializar estructuras
+    subred = lt.new_list()
+    amigos_explicitos = lt.new_list()
+    amigos_implicitos = lt.new_list()
+    dic_por_id = {}
 
-    # Nivel 1: Agregar amigos explícitos
-    for amigo_id in amigos_explicitos:
-        amigo_info = mp.get(catalog['social_graph']['information'], amigo_id)
-        if amigo_info:  # Asegurarse de que `amigo_info` no sea None
-            for hobby in amigo_info["hobbies"]:
-                if hobby in lista_hobbies and amigo_id not in dic_por_id:
-                    dic_por_id[amigo_id] = {
-                        "id": amigo_id,
-                        "name": amigo_info["name"],
-                        "hobbies": amigo_info["hobbies"],
-                        "depth": 1  # Nivel de profundidad 1
-                    }
-                    lt.add_last(subred, dic_por_id[amigo_id])
+    # Obtener amigos explícitos según la reciprocidad
+    for user in mp.get_keys(catalog['social_graph']["information"]):
+        followers_of_user1 = get_followers(catalog['social_graph'], user)
+        followers_of_user2 = get_followers(catalog['social_graph'], user_id)
+        if user_id in followers_of_user1 and user in followers_of_user2:
+            lt.add_last(amigos_explicitos, user)
 
-    # Nivel 2: Obtener amigos implícitos (amigos de amigos)
-
-    # Agregar amigos implícitos a la subred
-    for amigo_de_amigo_id in amigos_implicitos:
-        if amigo_de_amigo_id not in dic_por_id:  # Evitar duplicados en la subred final
-            amigoimpl_info = mp.get(catalog['social_graph']['information'], amigo_de_amigo_id)
-            if amigoimpl_info:  # Verificar que la información no sea None
-                for hobby in amigoimpl_info["hobbies"]:
-                    if hobby in lista_hobbies:
-                        dic_por_id[amigo_de_amigo_id] = {
-                            "id": amigo_de_amigo_id,
-                            "name": amigoimpl_info["name"],
-                            "hobbies": amigoimpl_info["hobbies"],
-                            "depth": 2  # Nivel de profundidad 2
+    # Procesar amigos explícitos
+    for amigo_id in amigos_explicitos["elements"]:
+        amigo_info = mp.get(catalog['social_graph']["information"], amigo_id)
+        if amigo_info:
+            hobbies_amigo = amigo_info["hobbies"]
+            for hobby in hobbies_amigo:
+                if hobby in hobbies_interes:
+                    if amigo_id not in dic_por_id:
+                        dic_por_id[amigo_id] = {
+                            "id": amigo_id,
+                            "name": amigo_info["name"],
+                            "hobbies": hobbies_amigo,
+                            "depth": 1
                         }
-                        lt.add_last(subred, dic_por_id[amigo_de_amigo_id])
+                        lt.add_last(subred, dic_por_id[amigo_id])
+                    
+
+            # Buscar amigos implícitos (amigos de amigos)
+        for amigos in amigos_explicitos:
+            for user1 in mp.get_keys(catalog['social_graph']["information"]):
+                followers_of_user1 = get_followers(catalog['social_graph'], user1)
+                followers_of_user2 = get_followers(catalog['social_graph'], amigos)
+                if user_id in followers_of_user1 and user in followers_of_user2:
+                    lt.add_last(amigos_implicitos, user1)
+            
+            
+            for amigo_de_amigo_id in amigos_implicitos:
+                if amigo_de_amigo_id not in dic_por_id and amigo_de_amigo_id != user_id:
+                    amigo_de_amigo_info = mp.get(catalog['social_graph']["information"], amigo_de_amigo_id)
+                    if amigo_de_amigo_info:
+                        hobbies_amigo_impl = amigo_de_amigo_info["hobbies"].split(",")
+                        for hobby in hobbies_amigo_impl:
+                            if hobby in hobbies_interes:
+                                dic_por_id[amigo_de_amigo_id] = {
+                                    "id": amigo_de_amigo_id,
+                                    "name": amigo_de_amigo_info["name"],
+                                    "hobbies": hobbies_amigo_impl,
+                                    "depth": 2
+                                }
+                                lt.add_last(amigos_implicitos, amigo_de_amigo_id)
+                                lt.add_last(subred, dic_por_id[amigo_de_amigo_id])
+                                
 
     # Calcular tiempo de ejecución
     execution_time = time.time() - start_time
 
     # Retornar resultados
     return {
-        "execution_time": execution_time * 1000,  # Convertir a milisegundos
-        "explicit_friends": len(amigos_explicitos),
-        "implicit_friends": len(amigos_implicitos),
+        "execution_time": execution_time * 1000,  # Milisegundos
+        "explicit_friends": len(amigos_explicitos["elements"]),
+        "implicit_friends": len(amigos_implicitos["elements"]),
         "subnet": subred
     }
     

@@ -126,35 +126,21 @@ def print_req_5(control):
     # Solicitar el número de amigos a retornar
     numero_amigos = int(input("Ingrese el número de amigos a retornar: "))
 
-    # Llamar a la función que obtiene los amigos
+    # Llamar a la función que obtiene los amigos del usuario
     resultados = lg.req_5(control, user_id, numero_amigos)
 
-    # Imprimir el tiempo de ejecución
-    #print("Tiempo de ejecución:", f"{resultados['execution_time'] :.3f}", "[ms]")  
+    # Imprimir el total de amigos encontrados
+    print(f"Total de amigos encontrados: {len(resultados)}")
 
-    # Obtener la lista de amigos desde 'elements'
-    amigos = resultados.get('elements', [])
-    
-    # Imprimir los amigos obtenidos
-    print(f"Total de amigos obtenidos: {len(amigos)}")
-    
     # Imprimir los detalles de los amigos
-    if amigos:
+    if resultados:
         print("=" * 80)
         print("Detalles de los amigos:")
-        
         table_friends = []
-        for friend in amigos:
-            # Verificar que friend sea un diccionario
-            if isinstance(friend, dict):
-                table_friends.append([friend.get('id', 'N/A'), 
-                                      friend.get('name', 'N/A'), 
-                                      friend.get('followed_count', 0), 
-                                      len(friend.get('seguidores', []))])
-            else:
-                print(f"Advertencia: Se encontró un elemento no esperado: {friend}")
+        for friend in resultados:
+            table_friends.append([friend['id'], friend['name'], friend['followed_count'], len(friend['seguidores'])])
         
-        headers_friends = ["ID", "Nombre", "Cantidad Seguidos", "Cantidad Seguidores"]
+        headers_friends = ["ID", "Nombre", "Número de Seguidos", "Número de Seguidores"]
         print(tabulate(table_friends, headers=headers_friends, tablefmt="grid"))
     else:
         print("No se encontraron amigos para el usuario especificado.")
@@ -189,17 +175,30 @@ def print_req_7(control):
     # Imprimir los detalles de la subred
     print("=" * 80)
     print("Detalles de la subred:")
-    table_subred = []
-    
-    for user in resultados['subnet']:
-        table_subred.append([user['id'], user['name'], user['depth'], ', '.join(user['hobbies'])])
-    
-    headers_subred = ["ID", "Nombre", "Nivel", "Hobbies"]
-    print(tabulate(table_subred, headers=headers_subred, tablefmt="grid"))
 
-    if len(resultados['subnet']) == 0:
+    # Verificar si 'subnet' contiene elementos
+    if resultados['subnet']['size'] == 0:
         print("No se encontró una subred de usuarios con intereses similares.")
+    else:
+        table_subred = []
 
+        # Acceder a los elementos de la subred
+        for user in resultados['subnet']['elements']:
+            # Verificar que user sea un diccionario con las claves esperadas
+            if isinstance(user, dict) and 'id' in user and 'name' in user and 'depth' in user and 'hobbies' in user:
+                hobbies = user['hobbies'] if isinstance(user['hobbies'], list) else [user['hobbies']]
+                table_subred.append([
+                    user['id'],
+                    user['name'],
+                    user['depth'],
+                    ', '.join(hobbies)
+                ])
+            else:
+                print(f"Advertencia: se encontró un elemento no válido en la subred: {user}")
+
+        # Imprimir tabla con los detalles de la subred
+        headers_subred = ["ID", "Nombre", "Nivel", "Hobbies"]
+        print(tabulate(table_subred, headers=headers_subred, tablefmt="grid"))
 def print_req_8(control):
     """
         Función que imprime la solución del Requerimiento 8 en consola
