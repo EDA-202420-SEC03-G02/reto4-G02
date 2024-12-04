@@ -38,6 +38,20 @@ def new_dijsktra_search(source):
     """
     search = {"source": source, "visited": None, "pq": None}
     return search
+def new_dijkstra_search(source):
+    """
+    Crea una estructura de búsqueda usada en el algoritmo Dijkstra.
+
+    Se crea una estructura de búsqueda con los siguientes atributos:
+    - **source**: Vértice de origen. Se inicializa en `source`
+    - **visited**: Mapa con los vértices visitados. Se inicializa en un diccionario vacío
+    - **pq**: Cola indexada con los vértices visitados. Se inicializa en una lista vacía
+
+    :returns: Estructura de búsqueda
+    :rtype: dict
+    """
+    search = {"source": source, "visited": {}, "pq": []}  # Inicializar visited como un diccionario vacío
+    return search
 def new_edge(v_a, v_b, weight=0):
     """
     Crea un nuevo arco entrelos vertices ``v_a`` y ``v_b`` con un peso ``weight``
