@@ -2,6 +2,8 @@ import sys
 import App.logic as lg
 from tabulate import tabulate
 from datetime import datetime
+from DataStructures import array_list as lt
+
 
 def new_logic():
     """
@@ -117,11 +119,45 @@ def print_req_4(control):
 
 def print_req_5(control):
     """
-        Función que imprime la solución del Requerimiento 5 en consola
+    Función que imprime la solución del Requerimiento 5 en consola.
     """
-    # TODO: Imprimir el resultado del requerimiento 5
-    pass
+    # Solicitar el ID del usuario
+    user_id = input("Ingrese el ID del usuario: ")
+    # Solicitar el número de amigos a retornar
+    numero_amigos = int(input("Ingrese el número de amigos a retornar: "))
 
+    # Llamar a la función que obtiene los amigos
+    resultados = lg.req_5(control, user_id, numero_amigos)
+
+    # Imprimir el tiempo de ejecución
+    #print("Tiempo de ejecución:", f"{resultados['execution_time'] :.3f}", "[ms]")  
+
+    # Obtener la lista de amigos desde 'elements'
+    amigos = resultados.get('elements', [])
+    
+    # Imprimir los amigos obtenidos
+    print(f"Total de amigos obtenidos: {len(amigos)}")
+    
+    # Imprimir los detalles de los amigos
+    if amigos:
+        print("=" * 80)
+        print("Detalles de los amigos:")
+        
+        table_friends = []
+        for friend in amigos:
+            # Verificar que friend sea un diccionario
+            if isinstance(friend, dict):
+                table_friends.append([friend.get('id', 'N/A'), 
+                                      friend.get('name', 'N/A'), 
+                                      friend.get('followed_count', 0), 
+                                      len(friend.get('seguidores', []))])
+            else:
+                print(f"Advertencia: Se encontró un elemento no esperado: {friend}")
+        
+        headers_friends = ["ID", "Nombre", "Cantidad Seguidos", "Cantidad Seguidores"]
+        print(tabulate(table_friends, headers=headers_friends, tablefmt="grid"))
+    else:
+        print("No se encontraron amigos para el usuario especificado.")
 
 def print_req_6(control):
     """
@@ -131,14 +167,43 @@ def print_req_6(control):
     pass
 
 
-def print_req_7(control):
+def print_req_7(catalog):
     """
-        Función que imprime la solución del Requerimiento 7 en consola
+    Función que imprime la solución del Requerimiento 7 en consola.
     """
-    # TODO: Imprimir el resultado del requerimiento 7
-    pass
+    # Solicitar el ID del usuario de origen
+    user_id = input("Ingrese el ID del usuario de origen: ")
+    # Solicitar la lista de hobbies de interés
+    lst_hobbies = input("Ingrese los hobbies de interés separados por comas (,): ")
 
+    # Llamar a la función que obtiene la subred social
+    resultados = lg.req_7(catalog, user_id, lst_hobbies)
 
+    # Imprimir el total de amigos explícitos e implícitos
+    print(f"Amigos explícitos encontrados: {resultados['explicit_friends']}")
+    print(f"Amigos implícitos encontrados: {resultados['implicit_friends']}")
+
+    # Verificar si se encontró una subred
+    if lt.size(resultados["subnet"]) > 0:
+        print("=" * 80)
+        print("Detalles de la subred social:")
+        table_subnet = []
+        
+        # Recorrer la lista de subred para construir la tabla
+        for i in range(1, lt.size(resultados["subnet"]) + 1):
+            friend = lt.getElement(resultados["subnet"], i)
+            table_subnet.append([
+                friend["id"], 
+                friend["name"], 
+                ", ".join(friend["hobbies"]), 
+                friend["depth"]
+            ])
+        
+        # Encabezados para la tabla
+        headers_subnet = ["ID", "Nombre", "Hobbies", "Nivel de profundidad"]
+        print(tabulate(table_subnet, headers=headers_subnet, tablefmt="grid"))
+    else:
+        print("No se encontró una subred social con los criterios especificados.")
 def print_req_8(control):
     """
         Función que imprime la solución del Requerimiento 8 en consola
