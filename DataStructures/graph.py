@@ -345,3 +345,18 @@ def in_degree(graph, key_vertex):
         return None
 
     return mp.get(graph["in_degree"], key_vertex) if graph["in_degree"] else None
+
+def get_vertex(graph, vertex_id):
+    """
+    Obtiene el vértice y su información asociada desde el grafo.
+
+    Args:
+        graph (dict): El grafo social.
+        vertex_id (str): El ID del vértice a obtener.
+
+    Returns:
+        dict: Información del vértice si existe, None si no se encuentra.
+    """
+    if vertex_id in graph['vertices']:
+        return graph['vertices'][vertex_id]
+    return None

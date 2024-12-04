@@ -25,8 +25,9 @@ def load_data(catalog, relationships_file, users_file):
     """
     Carga los datos de relaciones y usuarios en el grafo.
     """
-    # Cargar relaciones
-    relationships_file = "C:\\Users\\dfeli\\Downloads\\Universidad Segundo Semestre\\Estructura De Datos Y Algoritmos\\Retos\\Reto 4\\reto4-G02\\Data\\relationships_large.csv"
+    start_time = time.time()
+    # Cargar relaciones #"C:\\Users\\dfeli\\Downloads\\Universidad Segundo Semestre\\Estructura De Datos Y Algoritmos\\Retos\\Reto 4\\reto4-G02\\Data\\relationships_large.csv"
+    relationships_file = r"C:\\Users\\danie\\Downloads\\reto 4\\reto4-G02\\Data\\relationships_large.csv"
     #No borrar las direcciones de los demas solo comentarlas
     file1 = csv.DictReader(open(relationships_file, encoding="ISO-8859-1"), delimiter=';')
 
@@ -39,7 +40,7 @@ def load_data(catalog, relationships_file, users_file):
         g.add_edge(catalog['social_graph'], follower_id, followed_id)
 
     # Cargar usuarios  #"C:\\Users\\dfeli\\Downloads\\Universidad Segundo Semestre\\Estructura De Datos Y Algoritmos\\Retos\\Reto 4\\reto4-G02\\Data\\users_info_large.csv"
-    users_file = r"C:\\Users\\danie\\Downloads\\reto 4\\reto4-G02\\Data\\users_info_80.csv"
+    users_file = r"C:\\Users\\danie\\Downloads\\reto 4\\reto4-G02\\Data\\users_info_large.csv"
     #No borrar las direcciones de los demas solo comentarlas 
     file2 = csv.DictReader(open(users_file, encoding="ISO-8859-1"), delimiter=';')
     for row in file2:
@@ -344,26 +345,38 @@ def req_4(catalog, id_a, id_b):
     friends_a = set(mp.get(catalog['social_graph']['vertices'], id_a) or [])
     friends_b = set(mp.get(catalog['social_graph']['vertices'], id_b) or [])
 
+
+    print("Amigos de id_a:", friends_a)
+    print("Amigos de id_b:", friends_b)
+
     # Encontrar amigos en común
     common_friends = friends_a.intersection(friends_b)
+   
 
     # Construir los detalles de los amigos en común
     common_friends_details = []
     for friend_id in common_friends:
-        friend_info = mp.get(catalog['social_graph']['information'], friend_id)
-        if friend_info:
+        friend_vertex = g.get_vertex(catalog['social_graph'], friend_id)
+        if friend_vertex:
+            friend_info = friend_vertex['value']
+            
             common_friends_details.append({
                 "id": friend_id,
                 "alias": friend_info.get("name", "Desconocido"),
                 "type": friend_info.get("type", "Desconocido")
             })
+        else:
+            print(f"El vértice para el ID {friend_id} no se encontró.")
 
     execution_time = time.time() - start_time  # Calcular tiempo de ejecución
+
+
     return {
         "execution_time": execution_time * 1000,  # Convertir a milisegundos
         "common_friends_count": len(common_friends),
         "common_friends_details": common_friends_details
     }
+
     
 def req_5(catalog):
     """

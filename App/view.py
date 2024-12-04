@@ -166,7 +166,7 @@ def print_req_4(control):
     resultados = lg.req_4(control, id_a, id_b)
 
     # Imprimir el tiempo de ejecución
-    print("Tiempo de ejecución:", f"{resultados['execution_time'] :.3f}", "[ms]")
+    print("Tiempo de ejecución:", f"{resultados['execution_time']:.3f}", "[ms]")
 
     # Imprimir el total de amigos en común
     print(f"Total de amigos en común: {resultados['common_friends_count']}")
@@ -180,7 +180,8 @@ def print_req_4(control):
             table_friends.append([friend['id'], friend['alias'], friend['type']])
 
         headers_friends = ["ID", "Alias", "Tipo"]
-    
+
+        # Imprimir la tabla con los detalles de los amigos en común
         print(tabulate(table_friends, headers=headers_friends, tablefmt="grid"))
     else:
         print("No se encontraron amigos en común entre los usuarios especificados.")
