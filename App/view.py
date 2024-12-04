@@ -29,10 +29,11 @@ def load_data(control):
     Carga los datos
     """
     
-    total_users, total_connections, user_types, average_followers, city_with_most_users = lg.load_data(control, "relationships_large.csv", "users_info_large.csv")
+    total_users, total_connections, user_types, average_followers, city_with_most_users,time = lg.load_data(control, "relationships_large.csv", "users_info_large.csv")
 
     print(f"\nTotal de usuarios cargados: {total_users}")
     print(f"Total de conexiones cargadas: {total_connections}")
+    print("Tiempo de ejecución:", f"{time:.3f}", "[ms]")
     
     print("\nTipos de usuarios:")
     display_user_types(user_types)

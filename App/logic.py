@@ -25,6 +25,7 @@ def load_data(catalog, relationships_file, users_file):
     """
     Carga los datos de relaciones y usuarios en el grafo.
     """
+    start_time = time.time()
     # Cargar relaciones
     relationships_file = "C:\\Users\\dfeli\\Downloads\\Universidad Segundo Semestre\\Estructura De Datos Y Algoritmos\\Retos\\Reto 4\\reto4-G02\\Data\\relationships_large.csv"
     #No borrar las direcciones de los demas solo comentarlas
@@ -73,8 +74,8 @@ def load_data(catalog, relationships_file, users_file):
     user_types = count_user_types(catalog['social_graph'])
     average_followers_value = average_followers(catalog['social_graph'])
     city_with_most_users_value = city_with_most_users(catalog['social_graph'])
-
-    return total_users, total_connections, user_types, average_followers_value, city_with_most_users_value
+    execution_time=time.time() - start_time
+    return total_users, total_connections, user_types, average_followers_value, city_with_most_users_value,execution_time
 
 def count_user_types(graph):
     """
