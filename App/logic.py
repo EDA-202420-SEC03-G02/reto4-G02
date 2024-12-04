@@ -22,8 +22,8 @@ def load_data(catalog, relationships_file, users_file):
     """
     Carga los datos de relaciones y usuarios en el grafo.
     """
-    # Cargar relaciones
-    relationships_file = "C:\\Users\\dfeli\\Downloads\\Universidad Segundo Semestre\\Estructura De Datos Y Algoritmos\\Retos\\Reto 4\\reto4-G02\\Data\\relationships_large.csv"
+    # Cargar relaciones  #"C:\\Users\\dfeli\\Downloads\\Universidad Segundo Semestre\\Estructura De Datos Y Algoritmos\\Retos\\Reto 4\\reto4-G02\\Data\\relationships_large.csv"
+    relationships_file = r"C:\\Users\\danie\\Downloads\\reto 4\\reto4-G02\\Data\\relationships_80.csv"
     #No borrar las direcciones de los demas solo comentarlas
     file1 = csv.DictReader(open(relationships_file, encoding="ISO-8859-1"), delimiter=';')
 
@@ -35,9 +35,9 @@ def load_data(catalog, relationships_file, users_file):
         # Agregar la conexión al grafo
         g.add_edge(catalog['social_graph'], follower_id, followed_id)
 
-    # Cargar usuarios
-    users_file = "C:\\Users\\dfeli\\Downloads\\Universidad Segundo Semestre\\Estructura De Datos Y Algoritmos\\Retos\\Reto 4\\reto4-G02\\Data\\users_info_large.csv"
-    #No borrar las direcciones de los demas solo comentarlas
+    # Cargar usuarios  #"C:\\Users\\dfeli\\Downloads\\Universidad Segundo Semestre\\Estructura De Datos Y Algoritmos\\Retos\\Reto 4\\reto4-G02\\Data\\users_info_large.csv"
+    users_file = r"C:\\Users\\danie\\Downloads\\reto 4\\reto4-G02\\Data\\users_info_80.csv"
+    #No borrar las direcciones de los demas solo comentarlas 
     file2 = csv.DictReader(open(users_file, encoding="ISO-8859-1"), delimiter=';')
     for row in file2:
         user_id = row["USER_ID"]
@@ -230,13 +230,44 @@ def req_3(catalog):
     pass
 
 
-def req_4(catalog):
+def req_4(catalog, id_a, id_b):
     """
-    Retorna el resultado del requerimiento 4
-    """
-    # TODO: Modificar el requerimiento 4
-    pass
+    Retorna los amigos en común entre dos usuarios.
 
+    Args:
+        catalog (dict): El catálogo que contiene el grafo social.
+        id_a (str): ID del primer usuario.
+        id_b (str): ID del segundo usuario.
+
+    Returns:
+        dict: Un diccionario con el tiempo de ejecución y los amigos en común.
+    """
+    start_time = time.time()  # Iniciar el temporizador
+
+    # Obtener los vecinos (amigos) de cada usuario
+    friends_a = set(mp.get(catalog['social_graph']['vertices'], id_a) or [])
+    friends_b = set(mp.get(catalog['social_graph']['vertices'], id_b) or [])
+
+    # Encontrar amigos en común
+    common_friends = friends_a.intersection(friends_b)
+
+    # Construir los detalles de los amigos en común
+    common_friends_details = []
+    for friend_id in common_friends:
+        friend_info = mp.get(catalog['social_graph']['information'], friend_id)
+        if friend_info:
+            common_friends_details.append({
+                "id": friend_id,
+                "alias": friend_info.get("name", "Desconocido"),
+                "type": friend_info.get("type", "Desconocido")
+            })
+
+    execution_time = time.time() - start_time  # Calcular tiempo de ejecución
+    return {
+        "execution_time": execution_time * 1000,  # Convertir a milisegundos
+        "common_friends_count": len(common_friends),
+        "common_friends_details": common_friends_details
+    }
 
 def req_5(catalog):
     """
@@ -245,12 +276,91 @@ def req_5(catalog):
     # TODO: Modificar el requerimiento 5
     pass
 
-def req_6(catalog):
+def req_6(catalog, n):
     """
-    Retorna el resultado del requerimiento 6
+    Identifica los N usuarios más populares y construye un árbol que conecte a esos usuarios.
+
+    Args:
+        catalog (dict): El catálogo que contiene el grafo social.
+        n (int): Número de usuarios más populares a consultar.
+
+    Returns:
+        dict: Un diccionario con el tiempo de ejecución, detalles de los N usuarios más populares,
+              y el árbol que los conecta.
     """
-    # TODO: Modificar el requerimiento 6
-    pass
+    start_time = time.time()  # Iniciar el temporizador
+
+    # Obtener todos los usuarios y su cantidad de seguidores
+    users_followers = []
+    for user_id in mp.get_keys(catalog['social_graph']['vertices']):
+        followers = get_followers(catalog['social_graph'], user_id)
+        user_info = mp.get(catalog['social_graph']['information'], user_id)
+        
+        # Validar que user_info no sea None
+        if user_info is None:
+            user_name = "Unknown"
+        else:
+            user_name = user_info.get('name', 'Unknown')
+        
+        users_followers.append({
+            "id": user_id,
+            "name": user_name,
+            "followers_count": len(followers)
+        })
+
+    # Ordenar por cantidad de seguidores en orden descendente y tomar los N más populares
+    users_followers.sort(key=lambda x: x['followers_count'], reverse=True)
+    top_users = users_followers[:n]
+
+    # Construir un árbol que conecte a estos N usuarios
+    tree = build_tree(catalog['social_graph'], [user['id'] for user in top_users])
+
+    execution_time = time.time() - start_time  # Calcular el tiempo de ejecución
+
+    return {
+        "execution_time": execution_time * 1000,  # Convertir a milisegundos
+        "top_users": top_users,
+        "connection_tree": tree
+    }
+
+
+def build_tree(graph, user_ids):
+    """
+    Construye un árbol que conecta a los usuarios dados usando BFS.
+
+    Args:
+        graph (dict): El grafo social.
+        user_ids (list): Lista de IDs de los usuarios a conectar.
+
+    Returns:
+        dict: Un árbol de conexiones representado como un diccionario.
+    """
+    visited = set()
+    tree = {}
+
+    # Elegir cualquier usuario como raíz
+    root = user_ids[0]
+    queue = [(root, None)]  # (nodo actual, nodo padre)
+
+    while queue:
+        current, parent = queue.pop(0)
+        if current not in visited:
+            visited.add(current)
+            tree[current] = {
+                "parent": parent,
+                "children": []
+            }
+            if parent:
+                tree[parent]["children"].append(current)
+
+            # Agregar vecinos que estén en la lista de user_ids
+            neighbors = mp.get(graph['vertices'], current)
+            for neighbor in neighbors:
+                if neighbor in user_ids and neighbor not in visited:
+                    queue.append((neighbor, current))
+
+    return tree
+
 
 
 def req_7(catalog):

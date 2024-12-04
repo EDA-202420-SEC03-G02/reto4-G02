@@ -54,11 +54,21 @@ def display_user_types(user_types):
 
 def print_data(control, id):
     """
-        Función que imprime un dato dado su ID
-    """
-    #TODO: Realizar la función para imprimir un elemento
-    pass
+    Función que imprime un dato dado su ID.
 
+    Args:
+        control (dict): Control con la referencia al catálogo.
+        id (str): ID del usuario a buscar.
+    """
+    user_info = lg.get_data(control['catalog'], id)
+
+    if user_info:
+        print("Información del usuario:")
+        print(f"ID: {id}")
+        print(f"Alias: {user_info.get('name', 'Desconocido')}")
+        print(f"Tipo: {user_info.get('type', 'Desconocido')}")
+    else:
+        print(f"No se encontró información para el usuario con ID: {id}")
 def print_req_1(control):
     """
     Función que imprime la solución del Requerimiento 1 en consola.
@@ -109,11 +119,34 @@ def print_req_3(control):
 
 def print_req_4(control):
     """
-        Función que imprime la solución del Requerimiento 4 en consola
+    Función que imprime la solución del Requerimiento 4 en consola.
     """
-    # TODO: Imprimir el resultado del requerimiento 4
-    pass
+    # Solicitar los IDs de los usuarios
+    id_a = input("Ingrese el ID del primer usuario: ")
+    id_b = input("Ingrese el ID del segundo usuario: ")
 
+    # Llamar a la función que obtiene los amigos en común
+    resultados = lg.req_4(control, id_a, id_b)
+
+    # Imprimir el tiempo de ejecución
+    print("Tiempo de ejecución:", f"{resultados['execution_time'] :.3f}", "[ms]")
+
+    # Imprimir el total de amigos en común
+    print(f"Total de amigos en común: {resultados['common_friends_count']}")
+
+    # Imprimir los detalles de los amigos en común
+    if resultados['common_friends_count'] > 0:
+        print("=" * 80)
+        print("Detalles de los amigos en común:")
+        table_friends = []
+        for friend in resultados['common_friends_details']:
+            table_friends.append([friend['id'], friend['alias'], friend['type']])
+
+        headers_friends = ["ID", "Alias", "Tipo"]
+    
+        print(tabulate(table_friends, headers=headers_friends, tablefmt="grid"))
+    else:
+        print("No se encontraron amigos en común entre los usuarios especificados.")
 
 def print_req_5(control):
     """
@@ -125,10 +158,35 @@ def print_req_5(control):
 
 def print_req_6(control):
     """
-        Función que imprime la solución del Requerimiento 6 en consola
+    Función que imprime la solución del Requerimiento 6 en consola.
     """
-    # TODO: Imprimir el resultado del requerimiento 6
-    pass
+    # Solicitar el número de usuarios más populares
+    n = int(input("Ingrese el número de usuarios más populares a consultar: "))
+
+    # Llamar a la función que obtiene los N usuarios más populares y su árbol de conexión
+    resultados = lg.req_6(control, n)
+
+    # Imprimir el tiempo de ejecución
+    print("Tiempo de ejecución:", f"{resultados['execution_time']:.3f}", "[ms]")
+
+    # Imprimir los N usuarios más populares
+    print(f"Los {n} usuarios más populares:")
+    table_users = []
+    for user in resultados['top_users']:
+        table_users.append([user['id'], user['name'], user['followers_count']])
+
+    headers_users = ["ID", "Nombre", "Seguidores"]
+    print(tabulate(table_users, headers=headers_users, tablefmt="grid"))
+
+    # Imprimir el árbol de conexión
+    print("=" * 80)
+    print("Árbol de conexión entre los usuarios más populares:")
+    for node, info in resultados['connection_tree'].items():
+        print(f"Usuario {node}:")
+        print(f"  Padre: {info['parent']}")
+        print(f"  Hijos: {', '.join(info['children']) if info['children'] else 'Ninguno'}")
+
+
 
 
 def print_req_7(control):
