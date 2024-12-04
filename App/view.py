@@ -167,43 +167,39 @@ def print_req_6(control):
     pass
 
 
-def print_req_7(catalog):
+def print_req_7(control):
     """
     Función que imprime la solución del Requerimiento 7 en consola.
     """
     # Solicitar el ID del usuario de origen
     user_id = input("Ingrese el ID del usuario de origen: ")
     # Solicitar la lista de hobbies de interés
-    lst_hobbies = input("Ingrese los hobbies de interés separados por comas (,): ")
+    lst_hobbies = input("Ingrese la lista de hobbies de interés (separados por coma): ")
 
-    # Llamar a la función que obtiene la subred social
-    resultados = lg.req_7(catalog, user_id, lst_hobbies)
+    # Llamar a la función que obtiene la subred de usuarios con intereses similares
+    resultados = lg.req_7(control, user_id, lst_hobbies)
 
-    # Imprimir el total de amigos explícitos e implícitos
-    print(f"Amigos explícitos encontrados: {resultados['explicit_friends']}")
-    print(f"Amigos implícitos encontrados: {resultados['implicit_friends']}")
+    # Imprimir el tiempo de ejecución
+    print("Tiempo de ejecución:", f"{resultados['execution_time']:.3f}", "[ms]")  
 
-    # Verificar si se encontró una subred
-    if lt.size(resultados["subnet"]) > 0:
-        print("=" * 80)
-        print("Detalles de la subred social:")
-        table_subnet = []
-        
-        # Recorrer la lista de subred para construir la tabla
-        for i in range(1, lt.size(resultados["subnet"]) + 1):
-            friend = lt.getElement(resultados["subnet"], i)
-            table_subnet.append([
-                friend["id"], 
-                friend["name"], 
-                ", ".join(friend["hobbies"]), 
-                friend["depth"]
-            ])
-        
-        # Encabezados para la tabla
-        headers_subnet = ["ID", "Nombre", "Hobbies", "Nivel de profundidad"]
-        print(tabulate(table_subnet, headers=headers_subnet, tablefmt="grid"))
-    else:
-        print("No se encontró una subred social con los criterios especificados.")
+    # Imprimir la cantidad de amigos explícitos e implícitos encontrados
+    print(f"Cantidad de amigos explícitos encontrados: {resultados['explicit_friends']}")
+    print(f"Cantidad de amigos implícitos encontrados: {resultados['implicit_friends']}")
+
+    # Imprimir los detalles de la subred
+    print("=" * 80)
+    print("Detalles de la subred:")
+    table_subred = []
+    
+    for user in resultados['subnet']:
+        table_subred.append([user['id'], user['name'], user['depth'], ', '.join(user['hobbies'])])
+    
+    headers_subred = ["ID", "Nombre", "Nivel", "Hobbies"]
+    print(tabulate(table_subred, headers=headers_subred, tablefmt="grid"))
+
+    if len(resultados['subnet']) == 0:
+        print("No se encontró una subred de usuarios con intereses similares.")
+
 def print_req_8(control):
     """
         Función que imprime la solución del Requerimiento 8 en consola

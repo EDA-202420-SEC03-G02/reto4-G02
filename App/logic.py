@@ -331,6 +331,10 @@ def req_6(catalog):
     # TODO: Modificar el requerimiento 6
     pass
 
+    
+def req_7(catalog, user_id, lst_hobbies):
+    
+
     """
     Retorna el resultado del requerimiento 7.
     
@@ -339,7 +343,7 @@ def req_6(catalog):
     :param lst_hobbies: Lista de hobbies de interés para la búsqueda.
     :return: Un diccionario con el tiempo de ejecución, la cantidad de amigos encontrados y la subred.
     """
-    import time
+   
 
     # Inicializar el temporizador
     start_time = time.time()
