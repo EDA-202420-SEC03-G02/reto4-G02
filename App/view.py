@@ -2,6 +2,8 @@ import sys
 import App.logic as lg
 from tabulate import tabulate
 from datetime import datetime
+from DataStructures import array_list as lt
+
 
 def new_logic():
     """
@@ -188,11 +190,31 @@ def print_req_4(control):
 
 def print_req_5(control):
     """
-        Función que imprime la solución del Requerimiento 5 en consola
+    Función que imprime la solución del Requerimiento 5 en consola.
     """
-    # TODO: Imprimir el resultado del requerimiento 5
-    pass
+    # Solicitar el ID del usuario
+    user_id = input("Ingrese el ID del usuario: ")
+    # Solicitar el número de amigos a retornar
+    numero_amigos = int(input("Ingrese el número de amigos a retornar: "))
 
+    # Llamar a la función que obtiene los amigos del usuario
+    resultados = lg.req_5(control, user_id, numero_amigos)
+
+    # Imprimir el total de amigos encontrados
+    print(f"Total de amigos encontrados: {len(resultados)}")
+
+    # Imprimir los detalles de los amigos
+    if resultados:
+        print("=" * 80)
+        print("Detalles de los amigos:")
+        table_friends = []
+        for friend in resultados:
+            table_friends.append([friend['id'], friend['name'], friend['followed_count'], len(friend['seguidores'])])
+        
+        headers_friends = ["ID", "Nombre", "Número de Seguidos", "Número de Seguidores"]
+        print(tabulate(table_friends, headers=headers_friends, tablefmt="grid"))
+    else:
+        print("No se encontraron amigos para el usuario especificado.")
 
 def print_req_6(control):
     """
@@ -229,12 +251,50 @@ def print_req_6(control):
 
 def print_req_7(control):
     """
-        Función que imprime la solución del Requerimiento 7 en consola
+    Función que imprime la solución del Requerimiento 7 en consola.
     """
-    # TODO: Imprimir el resultado del requerimiento 7
-    pass
+    # Solicitar el ID del usuario de origen
+    user_id = input("Ingrese el ID del usuario de origen: ")
+    # Solicitar la lista de hobbies de interés
+    lst_hobbies = input("Ingrese la lista de hobbies de interés (separados por coma): ")
 
+    # Llamar a la función que obtiene la subred de usuarios con intereses similares
+    resultados = lg.req_7(control, user_id, lst_hobbies)
 
+    # Imprimir el tiempo de ejecución
+    print("Tiempo de ejecución:", f"{resultados['execution_time']:.3f}", "[ms]")  
+
+    # Imprimir la cantidad de amigos explícitos e implícitos encontrados
+    print(f"Cantidad de amigos explícitos encontrados: {resultados['explicit_friends']}")
+    print(f"Cantidad de amigos implícitos encontrados: {resultados['implicit_friends']}")
+
+    # Imprimir los detalles de la subred
+    print("=" * 80)
+    print("Detalles de la subred:")
+
+    # Verificar si 'subnet' contiene elementos
+    if resultados['subnet']['size'] == 0:
+        print("No se encontró una subred de usuarios con intereses similares.")
+    else:
+        table_subred = []
+
+        # Acceder a los elementos de la subred
+        for user in resultados['subnet']['elements']:
+            # Verificar que user sea un diccionario con las claves esperadas
+            if isinstance(user, dict) and 'id' in user and 'name' in user and 'depth' in user and 'hobbies' in user:
+                hobbies = user['hobbies'] if isinstance(user['hobbies'], list) else [user['hobbies']]
+                table_subred.append([
+                    user['id'],
+                    user['name'],
+                    user['depth'],
+                    ', '.join(hobbies)
+                ])
+            else:
+                print(f"Advertencia: se encontró un elemento no válido en la subred: {user}")
+
+        # Imprimir tabla con los detalles de la subred
+        headers_subred = ["ID", "Nombre", "Nivel", "Hobbies"]
+        print(tabulate(table_subred, headers=headers_subred, tablefmt="grid"))
 def print_req_8(control):
     """
         Función que imprime la solución del Requerimiento 8 en consola
