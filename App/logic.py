@@ -26,8 +26,8 @@ def load_data(catalog, relationships_file, users_file):
     Carga los datos de relaciones y usuarios en el grafo.
     """
     start_time = time.time()
-    # Cargar relaciones #"C:\\Users\\dfeli\\Downloads\\Universidad Segundo Semestre\\Estructura De Datos Y Algoritmos\\Retos\\Reto 4\\reto4-G02\\Data\\relationships_large.csv"
-    relationships_file = r"C:\\Users\\danie\\Downloads\\reto 4\\reto4-G02\\Data\\relationships_large.csv"
+    # Cargar relaciones
+    relationships_file = "C:\\Users\\dfeli\\Downloads\\Universidad Segundo Semestre\\Estructura De Datos Y Algoritmos\\Retos\\Reto 4\\reto4-G02\\Data\\relationships_large.csv"
     #No borrar las direcciones de los demas solo comentarlas
     file1 = csv.DictReader(open(relationships_file, encoding="ISO-8859-1"), delimiter=';')
 
@@ -39,9 +39,9 @@ def load_data(catalog, relationships_file, users_file):
         # Agregar la conexión al grafo
         g.add_edge(catalog['social_graph'], follower_id, followed_id)
 
-    # Cargar usuarios  #"C:\\Users\\dfeli\\Downloads\\Universidad Segundo Semestre\\Estructura De Datos Y Algoritmos\\Retos\\Reto 4\\reto4-G02\\Data\\users_info_large.csv"
-    users_file = r"C:\\Users\\danie\\Downloads\\reto 4\\reto4-G02\\Data\\users_info_large.csv"
-    #No borrar las direcciones de los demas solo comentarlas 
+    # Cargar usuarios
+    users_file = "C:\\Users\\dfeli\\Downloads\\Universidad Segundo Semestre\\Estructura De Datos Y Algoritmos\\Retos\\Reto 4\\reto4-G02\\Data\\users_info_large.csv"
+    #No borrar las direcciones de los demas solo comentarlas
     file2 = csv.DictReader(open(users_file, encoding="ISO-8859-1"), delimiter=';')
     for row in file2:
         user_id = row["USER_ID"]
@@ -575,21 +575,21 @@ def req_7(catalog, user_id, lst_hobbies):
                     lt.add_last(amigos_implicitos, user1)
             
             
-            for amigo_de_amigo_id in amigos_implicitos:
-                if amigo_de_amigo_id not in dic_por_id and amigo_de_amigo_id != user_id:
-                    amigo_de_amigo_info = mp.get(catalog['social_graph']["information"], amigo_de_amigo_id)
-                    if amigo_de_amigo_info:
-                        hobbies_amigo_impl = amigo_de_amigo_info["hobbies"].split(",")
-                        for hobby in hobbies_amigo_impl:
-                            if hobby in hobbies_interes:
-                                dic_por_id[amigo_de_amigo_id] = {
-                                    "id": amigo_de_amigo_id,
-                                    "name": amigo_de_amigo_info["name"],
-                                    "hobbies": hobbies_amigo_impl,
-                                    "depth": 2
-                                }
-                                lt.add_last(amigos_implicitos, amigo_de_amigo_id)
-                                lt.add_last(subred, dic_por_id[amigo_de_amigo_id])
+        for amigo_de_amigo_id in amigos_implicitos:
+            if amigo_de_amigo_id not in dic_por_id and amigo_de_amigo_id != user_id:
+                amigo_de_amigo_info = mp.get(catalog['social_graph']["information"], amigo_de_amigo_id)
+                if amigo_de_amigo_info:
+                    hobbies_amigo_impl = amigo_de_amigo_info["hobbies"].split(",")
+                    for hobby in hobbies_amigo_impl:
+                        if hobby in hobbies_interes:
+                            dic_por_id[amigo_de_amigo_id] = {
+                                "id": amigo_de_amigo_id,
+                                "name": amigo_de_amigo_info["name"],
+                                "hobbies": hobbies_amigo_impl,
+                                "depth": 2
+                            }
+                            lt.add_last(amigos_implicitos, amigo_de_amigo_id)
+                            lt.add_last(subred, dic_por_id[amigo_de_amigo_id])
                                 
 
     # Calcular tiempo de ejecución
@@ -603,7 +603,7 @@ def req_7(catalog, user_id, lst_hobbies):
         "subnet": subred
     }
     
-    pass
+pass
 
 
 def req_8(catalog):
